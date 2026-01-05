@@ -9,12 +9,12 @@ let
   make-pkgs = {
     by-name = gen-pkgs pkgs.callPackage (name: ./flatten + "/${name}/package.nix");
 
-    python-x-packages = py: gen-pkgs pkgs.${py}.callPackage (name: ./flatten + "/${name}");
+    python-x-packages = py: gen-pkgs pkgs.${py}.callPackage (name: ./flatten + "/${py}.${name}");
 
     python-packages =
       lst:
       lib.genAttrs [ "python313Packages" "python314Packages" ] (
-        name: make-pkgs.python-x-packages name (map (v: "${name}.${v}") lst)
+        name: make-pkgs.python-x-packages name lst
       );
 
     top-level = gen-pkgs pkgs.callPackage (name: ./flatten + "/${name}");
@@ -161,19 +161,13 @@ let
     "yaxmldiff"
     "yt-dlp-dearrow"
   ];
-
-  top-level = {
-    atopile = python-packages.python313Packages."python313Packages.atopile";
-    fava = python-packages.python313Packages."python313Packages.fava";
-    oddsprout = python-packages.python313Packages."python313Packages.fava";
-  };
 in
 { }
 // by-name
-// python-packages.python313Packages
-// python-packages.python314Packages
-// top-level
+// python-packages
 // {
+  inherit (python-packages.python313Packages) atopile fava oddsprout;
+
   linux-doc = pkgs.callPackage ./flatten/linux-doc/htmldocs.nix { };
 
   tipp10 = pkgs.qt6.callPackage ./flatten/tipp10 { };

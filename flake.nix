@@ -44,6 +44,6 @@
         }
       );
 
-      packages = eachSystem (import ./packages.nix);
+      legacyPackages = eachSystem (import ./packages.nix);
     };
 }
