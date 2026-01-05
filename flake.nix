@@ -43,5 +43,7 @@
           };
         }
       );
+
+      packages = eachSystem (import ./packages.nix);
     };
 }
