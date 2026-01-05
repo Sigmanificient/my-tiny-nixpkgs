@@ -12,6 +12,7 @@ nix eval --impure  --json --expr '
 let
   # Borrowed from maintainers/scripts/check-hydra-by-maintainer.nix
   inherit (pkgs) lib;
+
   maintainer_ = pkgs.lib.maintainers.${maintainer};
   packagesWith =
     cond: return: prefix: set:
@@ -24,7 +25,7 @@ let
               # Skip packages whose closure fails on evaluation.
               # This happens for pkgs like `python27Packages.djangoql`
               # that have disabled Python pkgs as dependencies.
-              builtins.seq pkg.outPath [ (return "${prefix}${name}") ]
+              builtins.seq pkg.outPath [ (return pkg "${prefix}${name}") ]
             else if
               pkg.recurseForDerivations or false || pkg.recurseForRelease or false
             # then packagesWith cond return pkg
@@ -51,7 +52,7 @@ let
       else
         false
     )
-  ) (name: name) "" pkgs;
+  ) (pkg: name: { inherit name; inherit (pkg.meta) position; }) "" pkgs;
 
 in
 packages
