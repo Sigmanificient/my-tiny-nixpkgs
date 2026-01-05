@@ -9,6 +9,7 @@ MY_PACKAGES=$(nix eval --impure --json --expr "
   }
 " | jq -c '.[]')
 
+rm -rf pkgs flatten
 mkdir -p pkgs flatten
 
 echo "$MY_PACKAGES" | while read -r pkg; do
