@@ -1,12 +1,14 @@
-/** Example usage:
+/**
+  Example usage:
 
-nix eval --impure  --json --expr '
-  (import ./list-my-packages.nix) {
-   pkgs = import <nixpkgs> {};
-   maintainer = "sigmanificient";
-  }'
+  nix eval --impure  --json --expr '
+    (import ./list-my-packages.nix) {
+     pkgs = import <nixpkgs> {};
+     maintainer = "sigmanificient";
+    }'
 
-**/
+  *
+*/
 { pkgs, maintainer }:
 
 let
@@ -39,20 +41,28 @@ let
       ) set
     ));
 
-  packages = builtins.trace "evaluating list of packages for maintainer: ${maintainer}" packagesWith (
-    name: pkg:
-    (
-      if builtins.hasAttr "meta" pkg && builtins.hasAttr "maintainers" pkg.meta then
+  packages =
+    builtins.trace "evaluating list of packages for maintainer: ${maintainer}" packagesWith
+      (
+        name: pkg:
         (
-          if builtins.isList pkg.meta.maintainers then
-            builtins.elem maintainer_ pkg.meta.maintainers
+          if builtins.hasAttr "meta" pkg && builtins.hasAttr "maintainers" pkg.meta then
+            (
+              if builtins.isList pkg.meta.maintainers then
+                builtins.elem maintainer_ pkg.meta.maintainers
+              else
+                maintainer_ == pkg.meta.maintainers
+            )
           else
-            maintainer_ == pkg.meta.maintainers
+            false
         )
-      else
-        false
-    )
-  ) (pkg: name: { inherit name; inherit (pkg.meta) position; }) "" pkgs;
+      )
+      (pkg: name: {
+        inherit name;
+        inherit (pkg.meta) position;
+      })
+      ""
+      pkgs;
 
 in
 packages
