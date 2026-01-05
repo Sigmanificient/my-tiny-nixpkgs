@@ -1,0 +1,4 @@
+*.diff !text !eol
+*.patch !text !eol
+
+pkgs linguist-vendored
