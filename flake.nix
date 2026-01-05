@@ -28,6 +28,10 @@
     }: {
       default = pkgs.mkShell {
         env.MY_TINY_NIXPKGS_SOURCE = nixpkgs.outPath;
+
+        packages = [
+          pkgs.jq
+        ];
       };
     });
   };
