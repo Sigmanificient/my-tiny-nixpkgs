@@ -24,6 +24,7 @@ let
     "apl386"
     "autotrash"
     "banana-vera"
+    "boxfort"
     "bsc"
     "cano"
     "cavalcade"
