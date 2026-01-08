@@ -1,0 +1,56 @@
+name: Sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15
+
+      - name: Enable Nix flakes
+        run: |
+          echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
+
+      - name: Update nixpkgs lock
+        run: |
+          nix flake update nixpkgs
+
+      - name: Enter nix develop
+        run: |
+          nix develop --command ./collect.sh
+
+      - name: Check for non-lockfile changes
+        id: changes
+        run: |
+          # List changed files excluding flake.lock
+          CHANGED=$(git diff --name-only | grep -v '^flake.lock$' || true)
+
+          if [ -n "$CHANGED" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "sync-bot"
+          git config user.email "sync-bot@users.noreply.github.com"
+
+          git add -A
+          git commit -m "Sync generated files [skip ci]"
+          git push
